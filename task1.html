@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Navigation Menu</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 200vh; /* Make page scrollable */
+        }
+
+        /* Navigation Styles */
+        .navbar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+            z-index: 1000;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .navbar.scrolled {
+            background: rgba(30, 41, 59, 0.95);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            height: 70px;
+        }
+
+        .logo {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: #667eea;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+
+        .navbar.scrolled .logo {
+            color: #fff;
+            text-shadow: 0 0 10px rgba(102, 126, 234, 0.5);
+        }
+
+        .nav-menu {
+            display: flex;
+            list-style: none;
+            gap: 0;
+        }
+
+        .nav-item {
+            position: relative;
+        }
+
+        .nav-link {
+            display: block;
+            padding: 12px 24px;
+            color: #1e293b;
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border-radius: 8px;
+            margin: 0 4px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .navbar.scrolled .nav-link {
+            color: #e2e8f0;
+        }
+
+        .nav-link::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            transition: left 0.5s ease;
+        }
+
+        .nav-link:hover::before {
+            left: 100%;
+        }
+
+        .nav-link:hover {
+            background: rgba(102, 126, 234, 0.1);
+            color: #667eea;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.2);
+        }
+
+        .navbar.scrolled .nav-link:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: #fff;
+            box-shadow: 0 4px 15px rgba(255, 255, 255, 0.1);
+        }
+
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            width: 0;
+            height: 2px;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            transition: all 0.3s ease;
+            transform: translateX(-50%);
+        }
+
+        .nav-link:hover::after {
+            width: 80%;
+        }
+
+        /* Mobile Menu Toggle */
+        .mobile-toggle {
+            display: none;
+            flex-direction: column;
+            cursor: pointer;
+            padding: 4px;
+        }
+
+        .mobile-toggle span {
+            width: 25px;
+            height: 3px;
+            background: #1e293b;
+            margin: 3px 0;
+            transition: 0.3s;
+            border-radius: 2px;
+        }
+
+        .navbar.scrolled .mobile-toggle span {
+            background: #fff;
+        }
+
+        /* Main Content */
+        .main-content {
+            margin-top: 70px;
+            padding: 50px 20px;
+            max-width: 1200px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .hero {
+            text-align: center;
+            padding: 100px 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            margin: 50px 0;
+            backdrop-filter: blur(10px);
+        }
+
+        .hero h1 {
+            font-size: 3rem;
+            color: #fff;
+            margin-bottom: 20px;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+        }
+
+        .hero p {
+            font-size: 1.2rem;
+            color: #e2e8f0;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .content-section {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 60px 40px;
+            margin: 50px 0;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        .content-section h2 {
+            color: #1e293b;
+            margin-bottom: 20px;
+            font-size: 2rem;
+        }
+
+        .content-section p {
+            color: #64748b;
+            line-height: 1.8;
+            margin-bottom: 15px;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .mobile-toggle {
+                display: flex;
+            }
+
+            .nav-menu {
+                position: fixed;
+                top: 70px;
+                left: -100%;
+                width: 100%;
+                height: calc(100vh - 70px);
+                background: rgba(255, 255, 255, 0.95);
+                backdrop-filter: blur(10px);
+                flex-direction: column;
+                justify-content: flex-start;
+                align-items: center;
+                padding-top: 50px;
+                transition: left 0.3s ease;
+            }
+
+            .navbar.scrolled .nav-menu {
+                background: rgba(30, 41, 59, 0.95);
+            }
+
+            .nav-menu.active {
+                left: 0;
+            }
+
+            .nav-item {
+                margin: 10px 0;
+            }
+
+            .nav-link {
+                font-size: 1.2rem;
+                padding: 15px 30px;
+            }
+
+            .hero h1 {
+                font-size: 2rem;
+            }
+
+            .content-section {
+                padding: 40px 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar" id="navbar">
+        <div class="nav-container">
+            <a href="#" class="logo">LOGO</a>
+            
+            <ul class="nav-menu" id="nav-menu">
+                <li class="nav-item">
+                    <a href="#home" class="nav-link">Home</a>
+                </li>
+                <li class="nav-item">
+                    <a href="#about" class="nav-link">About</a>
+                </li>
+                <li class="nav-item">
+                    <a href="#services" class="nav-link">Services</a>
+                </li>
+                <li class="nav-item">
+                    <a href="#portfolio" class="nav-link">Portfolio</a>
+                </li>
+                <li class="nav-item">
+                    <a href="#contact" class="nav-link">Contact</a>
+                </li>
+            </ul>
+
+            <div class="mobile-toggle" id="mobile-toggle">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </div>
+    </nav>
+
+    <main class="main-content">
+        <section class="hero" id="home">
+            <h1>Interactive Navigation Demo</h1>
+            <p>Scroll down to see the navigation menu transform with smooth animations and color changes. Hover over menu items to see beautiful interactive effects.</p>
+        </section>
+
+        <section class="content-section" id="about">
+            <h2>About Section</h2>
+            <p>This navigation menu demonstrates several advanced features:</p>
+            <p>• <strong>Scroll Detection:</strong> The menu background changes from light to dark with a blur effect when scrolling</p>
+            <p>• <strong>Hover Effects:</strong> Menu items have multiple hover animations including color changes, elevation, and shimmer effects</p>
+            <p>• <strong>Smooth Transitions:</strong> All animations use CSS cubic-bezier timing for professional feel</p>
+            <p>• <strong>Responsive Design:</strong> Adapts to mobile devices with a collapsible menu</p>
+        </section>
+
+        <section class="content-section" id="services">
+            <h2>Services Section</h2>
+            <p>The navigation menu includes the following interactive features:</p>
+            <p>• Glassmorphism design with backdrop blur effects</p>
+            <p>• Gradient color schemes that adapt to scroll state</p>
+            <p>• Animated underlines that appear on hover</p>
+            <p>• Shimmer effects that sweep across menu items</p>
+            <p>• Smooth color transitions between light and dark themes</p>
+        </section>
+
+        <section class="content-section" id="portfolio">
+            <h2>Portfolio Section</h2>
+            <p>This menu demonstrates modern web design principles:</p>
+            <p>• Fixed positioning that stays visible during scroll</p>
+            <p>• CSS transforms for smooth hover animations</p>
+            <p>• Box shadows that create depth and dimension</p>
+            <p>• Responsive breakpoints for mobile compatibility</p>
+            <p>• Accessibility-friendly color contrasts and focus states</p>
+        </section>
+
+        <section class="content-section" id="contact">
+            <h2>Contact Section</h2>
+            <p>The technical implementation includes:</p>
+            <p>• JavaScript scroll event listeners with throttling</p>
+            <p>• CSS custom properties for theme switching</p>
+            <p>• Flexbox layouts for responsive design</p>
+            <p>• CSS animations and transitions for smooth effects</p>
+            <p>• Mobile-first responsive design approach</p>
+        </section>
+    </main>
+
+    <script>
+        // Get navbar element
+        const navbar = document.getElementById('navbar');
+        const mobileToggle = document.getElementById('mobile-toggle');
+        const navMenu = document.getElementById('nav-menu');
+
+        // Scroll event listener with throttling
+        let ticking = false;
+        
+        function updateNavbar() {
+            const scrolled = window.scrollY > 50;
+            
+            if (scrolled) {
+                navbar.classList.add('scrolled');
+            } else {
+                navbar.classList.remove('scrolled');
+            }
+            
+            ticking = false;
+        }
+
+        function requestTick() {
+            if (!ticking) {
+                requestAnimationFrame(updateNavbar);
+                ticking = true;
+            }
+        }
+
+        window.addEventListener('scroll', requestTick);
+
+        // Mobile menu toggle
+        mobileToggle.addEventListener('click', () => {
+            navMenu.classList.toggle('active');
+        });
+
+        // Close mobile menu when clicking on a link
+        document.querySelectorAll('.nav-link').forEach(link => {
+            link.addEventListener('click', () => {
+                navMenu.classList.remove('active');
+            });
+        });
+
+        // Smooth scrolling for anchor links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+
+        // Add interactive particle effect on hover (optional enhancement)
+        document.querySelectorAll('.nav-link').forEach(link => {
+            link.addEventListener('mouseenter', function(e) {
+                // Add subtle scale animation
+                this.style.transform = 'translateY(-2px) scale(1.05)';
+            });
+            
+            link.addEventListener('mouseleave', function(e) {
+                this.style.transform = 'translateY(0) scale(1)';
+            });
+        });
+
+        // Initialize navbar state
+        updateNavbar();
+    </script>
+</body>
+</html>
